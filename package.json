@@ -1,0 +1,25 @@
+{
+  "name": "wasm-diassembler",
+  "version": "0.0.1",
+  "description": "Disassembler of wasm binaries",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoseFMP/wasm-diassembler.git"
+  },
+  "keywords": [
+    "webassembly"
+  ],
+  "author": "Jose F. Mingorance-Puga",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JoseFMP/wasm-diassembler/issues"
+  },
+  "homepage": "https://github.com/JoseFMP/wasm-diassembler#readme",
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  }
+}
