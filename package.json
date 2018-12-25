@@ -1,5 +1,5 @@
 {
-  "name": "wasm-diassembler",
+  "name": "wasm-disassembler",
   "version": "0.0.1",
   "description": "Disassembler of wasm binaries",
   "main": "index.js",
