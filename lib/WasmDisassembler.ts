@@ -3,7 +3,7 @@ import { WasmModule, WasmVersions } from './WasmModule';
 import { CustomSection } from './sections/CustomSection';
 import { StartSection } from './sections/StartSection';
 import Index from './indexes/Index';
-import WasmBinaryProvider from './binaryProvider/WasmBinaryProvider'
+import { WasmBinaryProvider } from './binaryProvider/WasmBinaryProvider'
 import { InstantiateSection, PossibleSections } from './sections/Mapping';
 import { Disassembly } from './Disassembly';
 
@@ -24,7 +24,7 @@ export class WasmDisassembler {
 
     async Parse(): Promise<Disassembly | null> {
         const disassembly = new Disassembly()
-        disassembly.FileSize = this.bp.length
+        disassembly.FileSize = this.bp.Length
         disassembly.Modules = this.FindModules(0)
         return disassembly
     }
@@ -33,7 +33,7 @@ export class WasmDisassembler {
 
         let pointer = startPointer
         let modules: WasmModule[] = []
-        while (pointer < this.bp.length) {
+        while (pointer < this.bp.Length) {
             const moduleResult = this.FindModule(pointer);
             if (moduleResult) {
                 let module: WasmModule
@@ -95,7 +95,7 @@ export class WasmDisassembler {
         let its = 0
         let sections: Section[] = []
 
-        while ((pointer + WasmDisassembler.SectionIdLength + 5) < this.bp.length) {
+        while ((pointer + WasmDisassembler.SectionIdLength + 5) < this.bp.Length) {
             its++
             if (its > maxIts && false) {
                 break
@@ -124,11 +124,11 @@ export class WasmDisassembler {
 
         this.log(`Finding section header at pointer ${initialPointer}`)
         let pointer = initialPointer
-        if (pointer >= this.bp.length) {
+        if (pointer >= this.bp.Length) {
             return null // no section header available
         }
 
-        if (pointer < this.bp.length - 4 && this.FindMagicNumber(pointer)) {
+        if (pointer < this.bp.Length - 4 && this.FindMagicNumber(pointer)) {
             return null // no section header available
         }
 
@@ -172,7 +172,7 @@ export class WasmDisassembler {
                     pointer += (name ? name.length : 0)
                 }
                 pointer += 4;
-                (section as CustomSection).payload = this.bp.slice(pointer, pointer + section.contentSize)
+                (section as CustomSection).payload = this.bp.Slice(pointer, pointer + section.contentSize)
                 break;
 
             case SectionIds.Start:
@@ -188,7 +188,7 @@ export class WasmDisassembler {
 
 
     GetSectionId(initialPointer: number): SectionIds | null {
-        const sectionIdAsNumber = this.bp[initialPointer]
+        const sectionIdAsNumber = this.bp.GetRawByte(initialPointer)
         if (!PossibleSections.includes(sectionIdAsNumber)) {
             this.log(`Unknown section id: ${sectionIdAsNumber}`)
             return null;
@@ -199,8 +199,8 @@ export class WasmDisassembler {
 
     private HasVarIntBytes(initialPointer: number): boolean {
         let pointer = initialPointer;
-        while (pointer < this.bp.length) {
-            if ((this.bp[pointer] & 0x80) === 0) {
+        while (pointer < this.bp.Length) {
+            if ((this.bp.GetRawByte(pointer) & 0x80) === 0) {
                 return true;
             }
             pointer++
@@ -213,7 +213,7 @@ export class WasmDisassembler {
             return false;
         }
         const stringLength = this.GetLength(pointer);
-        const stringBytesAvailable = this.bp.length >= pointer + stringLength
+        const stringBytesAvailable = this.bp.Length >= pointer + stringLength
         return stringBytesAvailable;
     }
 
@@ -231,10 +231,10 @@ export class WasmDisassembler {
         while (name.length < nameLength) {
             let codepoint: null | number = null
             let bytesToAdvance: number = 0
-            const b1 = this.bp[pointer]
-            const b2 = this.bp[pointer + 1]
-            const b3 = this.bp[pointer + 2]
-            const b4 = this.bp[pointer + 3]
+            const b1 = this.bp.GetRawByte(pointer)
+            const b2 = this.bp.GetRawByte(pointer + 1)
+            const b3 = this.bp.GetRawByte(pointer + 2)
+            const b4 = this.bp.GetRawByte(pointer + 3)
 
             let testCodePoint = Math.pow(2, 18) * (b1 - 0xF0) + Math.pow(2, 12) * (b2 - 0x80) + Math.pow(2, 6) * (b3 - 0x80) + (b4 - 0x80)
             if (testCodePoint >= 0x10000 && testCodePoint < 0x110000) {
@@ -284,7 +284,7 @@ export class WasmDisassembler {
         let shift = 0;
         let pointer = initialPointer
         while (true) {
-            const byte = this.bp[pointer];
+            const byte = this.bp.GetRawByte(pointer);
             length |= (byte & 0x7F) << shift;
             shift += 7;
             if ((byte & 0x80) === 0) {

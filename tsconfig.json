@@ -14,5 +14,10 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": false,
+        "types": ["node"]
     },
+    "exclude": [
+        "test",
+        "dist"
+    ]
 }

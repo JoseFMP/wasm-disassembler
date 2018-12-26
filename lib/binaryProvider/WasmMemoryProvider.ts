@@ -1,9 +1,11 @@
 
-import WasmBinaryProvider from './WasmBinaryProvider'
-import U32 from './U32';
+import { WasmBinaryProvider } from './WasmBinaryProvider'
+import { U32 } from './U32';
 
 export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider {
 
+
+    Length: number;
 
     private log: (message: string) => void
 
@@ -16,6 +18,11 @@ export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider
         }
         super(binary)
         this.log = logger
+        this.Length = binary.length
+    }
+
+    Slice(initialPointer: number, finalPointer: number): Uint8Array {
+        return this.slice(initialPointer, finalPointer)
     }
 
     GetRawByte(pointer: number): number {
