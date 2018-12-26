@@ -1,14 +1,13 @@
-import Section, { SectionIds } from './sections/Section'
-import Disassembly from './Disassembly';
-import WasmModule, { WasmVersions } from './WasmModule';
-import CustomSection from './sections/CustomSection';
-import StartSection from './sections/StartSection';
+import { Section, SectionIds } from './sections/Section'
+import { WasmModule, WasmVersions } from './WasmModule';
+import { CustomSection } from './sections/CustomSection';
+import { StartSection } from './sections/StartSection';
 import Index from './indexes/Index';
 import WasmBinaryProvider from './binaryProvider/WasmBinaryProvider'
 import { InstantiateSection, PossibleSections } from './sections/Mapping';
+import { Disassembly } from './Disassembly';
 
-
-export default class WasmDisassembler {
+export class WasmDisassembler {
 
 
     static readonly SectionIdLength = 1

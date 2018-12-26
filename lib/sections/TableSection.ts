@@ -1,5 +1,5 @@
-import Section, { SectionIds } from './Section'
+import { Section, SectionIds } from './Section'
 
-export default class TableSection extends Section {
+export class TableSection extends Section {
     sectionId: SectionIds = SectionIds.Table;
 }

@@ -1,3 +1,4 @@
+
 export enum SectionIds {
     Custom = 0,
     Type = 1,
@@ -11,12 +12,9 @@ export enum SectionIds {
     Element = 9,
     Code = 10,
     Data = 11
-};
+}
 
-
-abstract class Section {
+export abstract class Section {
     abstract sectionId: SectionIds
     contentSize: number
 }
-
-export default Section

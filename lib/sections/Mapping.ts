@@ -1,16 +1,16 @@
-import CustomSection from './CustomSection';
+import { CustomSection } from './CustomSection';
+import { ImportSection } from './ImportSection';
+import { CodeSection } from './CodeSection';
+import { StartSection } from './StartSection';
+import { DataSection } from './DataSection';
+import { ElementSection } from './ElementSection';
+import { ExportSection } from './ExportSection';
+import { FunctionSection } from './FunctionSection';
+import { GlobalSection } from './GlobalSection';
+import { MemorySection } from './MemorySection';
+import { TableSection } from './TableSection';
+import { TypeSection } from './TypeSection';
 import { SectionIds } from './Section';
-import ImportSection from './ImportSection';
-import CodeSection from './CodeSection';
-import StartSection from './StartSection';
-import DataSection from './DataSection';
-import ElementSection from './ElementSection';
-import ExportSection from './ExportSection';
-import FunctionSection from './FunctionSection';
-import GlobalSection from './GlobalSection';
-import MemorySection from './MemorySection';
-import TableSection from './TableSection';
-import TypeSection from './TypeSection';
 
 
 

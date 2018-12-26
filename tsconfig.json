@@ -1,4 +1,4 @@
-{
+{ 
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
@@ -6,11 +6,13 @@
         "outDir": "./dist",
         "strict": true,
         "lib": ["es2017"],
-        
+        "typeRoots": ["./lib/**"],
+        "noEmit": false,
+        "sourceMap": true,
         
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
-        "strictPropertyInitialization": false
-    }
+        "strictPropertyInitialization": false,
+    },
 }

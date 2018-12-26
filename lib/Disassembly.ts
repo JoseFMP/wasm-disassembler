@@ -1,6 +1,6 @@
-import WasmModule from './WasmModule';
+import { WasmModule } from './WasmModule';
 
-export default class Disassembly {
+export class Disassembly {
     FileSize: number
     Modules: WasmModule[]
 }

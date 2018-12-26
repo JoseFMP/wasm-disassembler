@@ -2,7 +2,7 @@
   "name": "wasm-disassembler",
   "version": "0.0.0",
   "description": "Disassembler of wasm binaries",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -22,4 +22,5 @@
   "devDependencies": {
     "typescript": "^3.2.2"
   }
+ 
 }

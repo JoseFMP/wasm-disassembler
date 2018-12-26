@@ -2,7 +2,7 @@
 import WasmBinaryProvider from './WasmBinaryProvider'
 import U32 from './U32';
 
-export default class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider {
+export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider {
 
 
     private log: (message: string) => void
