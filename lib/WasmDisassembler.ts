@@ -317,7 +317,7 @@ export class WasmDisassembler {
 
         let params: ValueType[] = []
 
-        while (arguments.length < numberOfParams) {
+        while (params.length < numberOfParams) {
             const valueType = this.ReadValueType(pointer);
             if (valueType) {
                 params.push(valueType);
@@ -330,7 +330,7 @@ export class WasmDisassembler {
         const numberOfResultTypes = resTypesParamsLength.Value;
         pointer += resTypesParamsLength.BytesUsed
 
-        while (arguments.length < numberOfResultTypes) {
+        while (resTypes.length < numberOfResultTypes) {
             const valueType = this.ReadValueType(pointer);
             if (valueType) {
                 resTypes.push(valueType);
