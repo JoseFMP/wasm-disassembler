@@ -8,6 +8,21 @@
 
 # Quick information
 This is an NPM library that is capable to disassembly webassemblies binaries.
+It is based on typescript and is targeting to be high-performance and minimalistic
+in the amount of dependencies.
 
+To install it just issue:
+```
+npm install wasm-disassembler
+```
+
+To disassemble a WASM binary:
+```
+    const binaryProvider = new WasmMemoryProvider(binary)
+    const disassembler = new WasmDisassembler(binaryProvider)
+    const disassembly = await disassembler.Parse()
+```
+where `binary` is a `Uint8Array` type.
+Note that you can implement your own binary provider besides the already existing `WasmMemoryProvider`. For that purpose you just need to implement the `WasmBinaryProvider` interface.
 # Feedback
 Did you find any bugs? Do you want a specific feature to be implemented for your organization? Drop me a line.
