@@ -19,6 +19,7 @@ export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider
         super(binary)
         this.log = logger
         this.Length = binary.length
+        this.log("Constructed WasmMemoryProvider")
     }
 
     Slice(initialPointer: number, finalPointer: number): Uint8Array {
