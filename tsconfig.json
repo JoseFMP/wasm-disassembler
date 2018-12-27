@@ -14,6 +14,8 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": false,
+        "noUnusedLocals": true,
+            
         "types": ["node"]
     },
     "exclude": [
