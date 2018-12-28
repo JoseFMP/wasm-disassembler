@@ -1,20 +1,20 @@
-import { Section, SectionIds } from './sections/Section'
-import { WasmModule, WasmVersions } from './WasmModule';
-import { CustomSection } from './sections/CustomSection';
-import { StartSection } from './sections/StartSection';
-import Index from './indexes/Index';
-import { WasmBinaryProvider } from './binaryProvider/WasmBinaryProvider'
-import { InstantiateSection, PossibleSections } from './sections/Mapping';
+import { Section, SectionIds } from '../sections/Section'
+import { WasmModule, WasmVersions } from '../WasmModule';
+import { CustomSection } from '../sections/CustomSection';
+import { StartSection } from '../sections/StartSection';
+import { Function } from '../functions/Function';
+import { WasmBinaryProvider } from '../binaryProvider/WasmBinaryProvider'
+import { InstantiateSection, PossibleSections } from '../sections/Mapping';
 import { Disassembly } from './Disassembly';
-import { FunctionType } from './wasmTypes/FunctionType';
-import { ValueType } from './wasmTypes/ValueType';
-import { TypeSection } from './sections/TypeSection';
+import { TypeSection } from '../sections/TypeSection';
+import { ImportSection } from '../sections/ImportSection';
+import { ImportSectionDisassembler } from './sections/ImportSectionDisassembler';
+import { TypeSectionDisassembler } from './sections/TypeSectionDisassembler';
 
 export class WasmDisassembler {
 
 
     static readonly SectionIdLength = 1
-    static readonly FuncTypeStartingByte = 0x60
     private readonly bp: WasmBinaryProvider
 
     private log: (message: string | object) => void
@@ -165,24 +165,26 @@ export class WasmDisassembler {
         switch (section.sectionId) {
             case SectionIds.Custom:
                 if (this.HasStringBytes(pointer)) {
-                    const name = this.ReadName(pointer)
+                    let name: string;
+                    [name, pointer] = this.bp.ReadName(pointer)
                     if (name) {
                         (section as CustomSection).name = name
                     }
                     else {
                         this.log('Section of type "Custom" but name not found')
                     }
-                    pointer += (name ? name.length : 0)
                 }
                 pointer += 4;
                 (section as CustomSection).payload = this.bp.Slice(pointer, pointer + section.contentSize)
                 break;
             case SectionIds.Start:
-                (section as StartSection).startFunction = new Index(this.bp.Getu32(pointer).Value)
+                (section as StartSection).startFunction = new Function(this.bp.Getu32(pointer).Value)
                 break;
             case SectionIds.Type:
-                (section as TypeSection).Functions = this.ReadFunctionTypes(pointer);
+                (section as TypeSection).Functions = TypeSectionDisassembler.ReadFunctionTypes(this.bp, pointer);
                 break;
+            case SectionIds.Import:
+                (section as ImportSection).Imports = ImportSectionDisassembler.FindImports(this.bp, pointer);
             default:
                // throw Error(`Not implemented section of type: ${section.sectionId}`)
         }
@@ -190,7 +192,6 @@ export class WasmDisassembler {
         return pointer
 
     }
-
 
     GetSectionId(initialPointer: number): SectionIds | null {
         const sectionIdAsNumber = this.bp.GetRawByte(initialPointer)
@@ -220,135 +221,6 @@ export class WasmDisassembler {
         const stringLength = this.bp.Getu32(pointer).Value;
         const stringBytesAvailable = this.bp.Length >= pointer + stringLength
         return stringBytesAvailable;
-    }
-
-    private ReadName(initialPointer: number): string | null {
-
-        let pointer = initialPointer
-        let name: string = ""
-
-        const nameLengthRes = this.bp.Getu32(pointer)
-        const nameLength = nameLengthRes.Value
-
-        this.log(`name length should be ${nameLength}`)
-        pointer += nameLengthRes.BytesUsed
-
-        while (name.length < nameLength) {
-            let codepoint: null | number = null
-            let bytesToAdvance: number = 0
-            const b1 = this.bp.GetRawByte(pointer)
-            const b2 = this.bp.GetRawByte(pointer + 1)
-            const b3 = this.bp.GetRawByte(pointer + 2)
-            const b4 = this.bp.GetRawByte(pointer + 3)
-
-            let testCodePoint = Math.pow(2, 18) * (b1 - 0xF0) + Math.pow(2, 12) * (b2 - 0x80) + Math.pow(2, 6) * (b3 - 0x80) + (b4 - 0x80)
-            if (testCodePoint >= 0x10000 && testCodePoint < 0x110000) {
-                codepoint = testCodePoint
-                bytesToAdvance = 4
-            }
-
-            if (!codepoint) {
-                testCodePoint = Math.pow(2, 12) * (b1 - 0xE0) + Math.pow(2, 6) * (b2 - 0x80) + (b3 - 0x80)
-                if (testCodePoint >= 0x800 && testCodePoint < 0xD800 || testCodePoint >= 0xE000 && testCodePoint < 0x10000) {
-                    codepoint = testCodePoint
-                    bytesToAdvance = 3
-                }
-            }
-
-            if (!codepoint) {
-                testCodePoint = Math.pow(2, 6) * (b1 - 0xC0) + (b2 - 0x80)
-                if (testCodePoint < 0x800 && testCodePoint >= 0x80) {
-                    codepoint = testCodePoint
-                    bytesToAdvance = 2
-                }
-            }
-
-            if (!codepoint) {
-                testCodePoint = b1
-                if (testCodePoint < 0x80) {
-                    codepoint = testCodePoint
-                    bytesToAdvance = 1
-                }
-            }
-
-            if (codepoint) {
-                name += String.fromCodePoint(codepoint)
-                pointer += bytesToAdvance
-                this.log(`Code point found with ${bytesToAdvance} bytes`)
-            }
-            else {
-                this.log(`Test codepoint ${testCodePoint}`)
-                break
-            }
-        }
-        return name.length > 0 ? name : null
-    }
-
-    ReadFunctionTypes(initialPointer: number): FunctionType[] {
-        let result: FunctionType[] = [];
-        let pointer = initialPointer;
-        const nFuncTypesLength = this.bp.Getu32(pointer);
-        const numberOfFuncTypes = nFuncTypesLength.Value;
-        pointer += nFuncTypesLength.BytesUsed;
-
-        while (result.length < numberOfFuncTypes) {
-            let readFunctypeRes: FunctionType | null
-            [readFunctypeRes, pointer] = this.ReadFuncType(pointer)
-            if (!readFunctypeRes){
-                throw new Error("Could not read func type.")
-            }
-            result.push(readFunctypeRes)
-        }
-        return result
-    }
-
-
-    ReadFuncType(initialPointer: number): [FunctionType | null, number] {
-        let result : FunctionType | null = null;
-        let pointer = initialPointer;
-        if (this.bp.GetRawByte(pointer) !== WasmDisassembler.FuncTypeStartingByte) {
-            throw new Error("Expected byte to be 0x60 as is the start of a functype")
-        }
-        result = new FunctionType();
-        pointer += 1;
-        const nParamsLengthRes = this.bp.Getu32(pointer);
-        const numberOfParams = nParamsLengthRes.Value;
-        pointer += nParamsLengthRes.BytesUsed
-
-        let params: ValueType[] = []
-
-        while (params.length < numberOfParams) {
-            const valueType = this.ReadValueType(pointer);
-            if (valueType) {
-                params.push(valueType);
-                pointer++;
-            }
-        }
-
-        let resTypes: ValueType[] = []
-        const resTypesParamsLength = this.bp.Getu32(pointer);
-        const numberOfResultTypes = resTypesParamsLength.Value;
-        pointer += resTypesParamsLength.BytesUsed
-
-        while (resTypes.length < numberOfResultTypes) {
-            const valueType = this.ReadValueType(pointer);
-            if (valueType) {
-                resTypes.push(valueType);
-                pointer++;
-            }
-        }
-
-        result.Parameters = params;
-        result.ResultTypes = resTypes;
-        return [result, pointer]
-    }
-
-    ReadValueType(initialPointer: number): ValueType | null {
-        let result : ValueType | null = null
-        if (Object.values(ValueType).includes(this.bp.GetRawByte(initialPointer))){
-            result = this.bp.GetRawByte(initialPointer);
-        }
-        return result;
     }
 
 }

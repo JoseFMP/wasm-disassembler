@@ -1,6 +1,7 @@
 
 import { WasmBinaryProvider } from './WasmBinaryProvider'
 import { U32 } from './U32';
+import { ValueType } from '../wasmTypes/ValueType';
 
 export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider {
 
@@ -72,9 +73,74 @@ export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider
         return result
     }
 
+    /** @inheritdoc */
+    ReadName(initialPointer: number): [string, number] {
 
-    ReadBytes(pointer: number, length: number): Uint8Array {
-        var result = this.subarray(pointer, pointer + length);
-        return new Uint8Array(result); // making a clone of the data
+        let pointer = initialPointer
+        let name: string = ""
+
+        const nameLengthRes = this.Getu32(pointer)
+        const nameLength = nameLengthRes.Value
+
+        this.log(`name length should be ${nameLength}`)
+        pointer += nameLengthRes.BytesUsed
+
+        while (name.length < nameLength) {
+            let codepoint: null | number = null
+            let bytesToAdvance: number = 0
+            const b1 = this.GetRawByte(pointer)
+            const b2 = this.GetRawByte(pointer + 1)
+            const b3 = this.GetRawByte(pointer + 2)
+            const b4 = this.GetRawByte(pointer + 3)
+
+            let testCodePoint = Math.pow(2, 18) * (b1 - 0xF0) + Math.pow(2, 12) * (b2 - 0x80) + Math.pow(2, 6) * (b3 - 0x80) + (b4 - 0x80)
+            if (testCodePoint >= 0x10000 && testCodePoint < 0x110000) {
+                codepoint = testCodePoint
+                bytesToAdvance = 4
+            }
+
+            if (!codepoint) {
+                testCodePoint = Math.pow(2, 12) * (b1 - 0xE0) + Math.pow(2, 6) * (b2 - 0x80) + (b3 - 0x80)
+                if (testCodePoint >= 0x800 && testCodePoint < 0xD800 || testCodePoint >= 0xE000 && testCodePoint < 0x10000) {
+                    codepoint = testCodePoint
+                    bytesToAdvance = 3
+                }
+            }
+
+            if (!codepoint) {
+                testCodePoint = Math.pow(2, 6) * (b1 - 0xC0) + (b2 - 0x80)
+                if (testCodePoint < 0x800 && testCodePoint >= 0x80) {
+                    codepoint = testCodePoint
+                    bytesToAdvance = 2
+                }
+            }
+
+            if (!codepoint) {
+                testCodePoint = b1
+                if (testCodePoint < 0x80) {
+                    codepoint = testCodePoint
+                    bytesToAdvance = 1
+                }
+            }
+
+            if (codepoint) {
+                name += String.fromCodePoint(codepoint)
+                pointer += bytesToAdvance
+                this.log(`Code point found with ${bytesToAdvance} bytes`)
+            }
+            else {
+                this.log(`Test codepoint ${testCodePoint}`)
+                break
+            }
+        }
+        return [name, pointer]
+    }
+
+    ReadValueType(initialPointer: number): ValueType | null {
+        let result: ValueType | null = null
+        if (Object.values(ValueType).includes(this.GetRawByte(initialPointer))) {
+            result = this.GetRawByte(initialPointer);
+        }
+        return result;
     }
 }

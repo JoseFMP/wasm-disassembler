@@ -1,5 +1,6 @@
+import { Importable } from '../imports/Importable';
 
-export default class Index {
+export class Function implements Importable {
 
     private index: number
 

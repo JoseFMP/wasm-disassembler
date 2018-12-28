@@ -2,7 +2,13 @@ import { WasmBinaryProvider } from '../lib/binaryProvider/WasmBinaryProvider';
 import { U32 } from '../lib/binaryProvider/U32';
 
 
-export class MockBinaryProvider extends Uint8Array implements WasmBinaryProvider {
+export class MockBinaryProvider implements WasmBinaryProvider {
+    ReadName(initialPointer: number): [string, number] {
+        throw new Error('Method not implemented.');
+    }
+    ReadValueType(initialPointer: number): import("/home/josem/repos/wasm-disassembler/lib/wasmTypes/ValueType").ValueType | null {
+        throw new Error('Method not implemented.');
+    }
 
     configuredCallbacks: WasmBinaryProvider | null = null
     logger: (message: string) => void

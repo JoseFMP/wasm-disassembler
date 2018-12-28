@@ -1,9 +1,9 @@
 import { Section, SectionIds } from "./Section";
-import Index from "../indexes/Index";
+import { Function } from '../functions/Function'
 
 export class StartSection extends Section {
 
     sectionId: SectionIds = SectionIds.Start;
-    startFunction: Index
+    startFunction: Function;
 
 }

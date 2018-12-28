@@ -1,4 +1,4 @@
-import { WasmModule } from './WasmModule';
+import { WasmModule } from '../WasmModule';
 
 export class Disassembly {
     FileSize: number

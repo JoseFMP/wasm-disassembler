@@ -1,3 +1,5 @@
+import { Importable } from './Importable';
+
 
 
 
@@ -5,8 +7,8 @@
 export class Import {
 
     Module: string;
-    Name: string;
+    EntityName: string;
 
-    Descriptor: any
-
+    Content: Importable;
 }
+
