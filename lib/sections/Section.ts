@@ -15,6 +15,8 @@ export enum SectionIds {
 }
 
 export abstract class Section {
-    abstract sectionId: SectionIds
-    contentSize: number
+    abstract sectionId: SectionIds;
+    contentSize: number;
+
+    abstract ReceivePayload(payload: any): void;
 }

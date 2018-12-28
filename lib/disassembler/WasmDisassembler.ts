@@ -1,15 +1,9 @@
 import { Section, SectionIds } from '../sections/Section'
 import { WasmModule, WasmVersions } from '../WasmModule';
-import { CustomSection } from '../sections/CustomSection';
-import { StartSection } from '../sections/StartSection';
-import { Function } from '../functions/WasmFunction';
 import { WasmBinaryProvider } from '../binaryProvider/WasmBinaryProvider'
 import { InstantiateSection, PossibleSections } from '../sections/Mapping';
 import { Disassembly } from './Disassembly';
-import { TypeSection } from '../sections/TypeSection';
-import { ImportSection } from '../sections/ImportSection';
-import { ImportSectionDisassembler } from './sections/ImportSectionDisassembler';
-import { TypeSectionDisassembler } from './sections/TypeSectionDisassembler';
+import { InstantiateSectionDisassembler } from './sections/SectionDisassembler';
 
 export class WasmDisassembler {
 
@@ -103,28 +97,23 @@ export class WasmDisassembler {
             if (its > maxIts && false) {
                 break
             }
-            const sectionHeader = this.FindSectionHeader(pointer)
-            let newSection: Section
 
-            if (sectionHeader !== null) {
-                
-                [newSection, pointer] = sectionHeader
-                this.FindSectionPayload(pointer, newSection)
-                sections.push(newSection)
-                pointer += newSection.contentSize
+            const findSectionResult = this.FindSection(pointer);
+            let newSection: Section;
+            if (findSectionResult) {  
+                [newSection, pointer] = findSectionResult;
+                sections.push(newSection);
             }
             else {
                 this.log('Could not find more sections :/')
-                break
+                break;
             }
-
         }
         return [sections, pointer]
     }
 
 
-    private FindSectionHeader(initialPointer: number): [Section, number] | null {
-
+    private FindSection(initialPointer: number): [Section, number] | null {
         this.log(`Finding section header at pointer ${initialPointer}`)
         let pointer = initialPointer
         if (pointer >= this.bp.Length) {
@@ -139,13 +128,12 @@ export class WasmDisassembler {
             return null;
         }
 
-
         const sectionType = this.GetSectionId(pointer)
         if (sectionType === null) {
             return null
         }
 
-        let newSection = InstantiateSection(sectionType)
+        let newSection = InstantiateSection(sectionType) as Section;
 
         pointer += WasmDisassembler.SectionIdLength
         const csu32 = this.bp.Getu32(pointer)
@@ -154,44 +142,15 @@ export class WasmDisassembler {
 
         newSection.sectionId = sectionType
         newSection.contentSize = contentSize
-        this.log(newSection)
 
-        return [newSection, pointer]
+        const sectionDisassembler = InstantiateSectionDisassembler(this.bp, newSection.sectionId);
+        const sectionDisassembly = sectionDisassembler.Disassemble(pointer);
+        newSection.ReceivePayload(sectionDisassembly);
+
+        pointer += contentSize;
+        return [newSection, pointer];
     }
 
-
-    FindSectionPayload(initialPointer: number, section: Section): number {
-        let pointer = initialPointer
-        switch (section.sectionId) {
-            case SectionIds.Custom:
-                if (this.HasStringBytes(pointer)) {
-                    let name: string;
-                    [name, pointer] = this.bp.ReadName(pointer)
-                    if (name) {
-                        (section as CustomSection).name = name
-                    }
-                    else {
-                        this.log('Section of type "Custom" but name not found')
-                    }
-                }
-                pointer += 4;
-                (section as CustomSection).payload = this.bp.Slice(pointer, pointer + section.contentSize)
-                break;
-            case SectionIds.Start:
-                (section as StartSection).startFunction = new Function(this.bp.Getu32(pointer).Value)
-                break;
-            case SectionIds.Type:
-                (section as TypeSection).Functions = TypeSectionDisassembler.ReadFunctionTypes(this.bp, pointer);
-                break;
-            case SectionIds.Import:
-                (section as ImportSection).Imports = ImportSectionDisassembler.FindImports(this.bp, pointer);
-            default:
-               // throw Error(`Not implemented section of type: ${section.sectionId}`)
-        }
-
-        return pointer
-
-    }
 
     GetSectionId(initialPointer: number): SectionIds | null {
         const sectionIdAsNumber = this.bp.GetRawByte(initialPointer)
@@ -212,15 +171,6 @@ export class WasmDisassembler {
             pointer++
         }
         return false;
-    }
-
-    private HasStringBytes(pointer: number): boolean {
-        if (!this.HasVarIntBytes(pointer)) {
-            return false;
-        }
-        const stringLength = this.bp.Getu32(pointer).Value;
-        const stringBytesAvailable = this.bp.Length >= pointer + stringLength
-        return stringBytesAvailable;
     }
 
 }

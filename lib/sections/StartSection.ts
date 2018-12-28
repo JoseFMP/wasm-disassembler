@@ -1,9 +1,13 @@
 import { Section, SectionIds } from "./Section";
-import { Function } from '../functions/WasmFunction'
+import { WasmFunction } from '../functions/WasmFunction'
 
 export class StartSection extends Section {
 
     sectionId: SectionIds = SectionIds.Start;
-    startFunction: Function;
+    startFunction: WasmFunction;
+
+    ReceivePayload(payload: WasmFunction): void {
+        this.startFunction = payload;
+    }
 
 }

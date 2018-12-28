@@ -6,5 +6,6 @@ import { Importable } from '../imports/Importable';
  * to avoid conflicts with the default type "Function"
  */
 export class WasmFunction implements Importable {
+    Index: number;
 
 }

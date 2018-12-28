@@ -4,7 +4,7 @@
   "description": "Disassembler of wasm binaries",
   "main": "index.ts",
   "scripts": {
-    "build": "tsc --listFiles --project tsconfig.build.json",
+    "build": "tsc --project tsconfig.build.json",
     "test": "mocha -r ts-node/register test/unit/**/*.test.ts",
     "test-integration": "mocha -r ts-node/register test/integration/**/*.integration.ts"
   },

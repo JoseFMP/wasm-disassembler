@@ -136,6 +136,7 @@ export class WasmMemoryProvider extends Uint8Array implements WasmBinaryProvider
         return [name, pointer]
     }
 
+    /** @inheritdoc */
     ReadValueType(initialPointer: number): ValueType | null {
         let result: ValueType | null = null
         if (Object.values(ValueType).includes(this.GetRawByte(initialPointer))) {

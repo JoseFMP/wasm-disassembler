@@ -5,4 +5,8 @@ export class TypeSection extends Section {
     sectionId: SectionIds = SectionIds.Type;
 
     Functions: FunctionType[];
+
+    ReceivePayload(payload: FunctionType[]): void {
+        this.Functions = payload;
+    }
 }

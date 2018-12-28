@@ -1,13 +1,12 @@
 { 
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "module": "commonjs",
         "declaration": true,
         "outDir": "./dist",
         "strict": true,
         "lib": ["es2017"],
-        "typeRoots": ["./lib/**"],
-        "noEmit": false,
+        "noEmit": true,
         "sourceMap": true,
         
         "noImplicitReturns": true,
@@ -19,6 +18,8 @@
         "types": ["node"],
     },
     "exclude": [
-        "dist"
+        "dist",
+        "*.js",
+        "node_modules",
     ]
 }

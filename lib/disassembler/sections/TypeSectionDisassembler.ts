@@ -1,22 +1,29 @@
 import { FunctionType } from '../../wasmTypes/FunctionType';
 import { WasmBinaryProvider } from '../../..';
 import { ValueType } from '../../wasmTypes/ValueType';
+import { SectionDisassembler } from './SectionDisassembler';
 
 
-export class TypeSectionDisassembler {
-
+export class TypeSectionDisassembler implements SectionDisassembler{
     static readonly FuncTypeStartingByte = 0x60;
 
-    static ReadFunctionTypes(binaryProvider: WasmBinaryProvider, initialPointer: number): FunctionType[] {
+    private readonly binaryProvider: WasmBinaryProvider;
+
+
+    constructor(binaryProvider: WasmBinaryProvider) {
+        this.binaryProvider = binaryProvider;
+    }
+
+    Disassemble(initialPointer: number): FunctionType[] {
         let result: FunctionType[] = [];
         let pointer = initialPointer;
-        const nFuncTypesLength = binaryProvider.Getu32(pointer);
+        const nFuncTypesLength = this.binaryProvider.Getu32(pointer);
         const numberOfFuncTypes = nFuncTypesLength.Value;
         pointer += nFuncTypesLength.BytesUsed;
 
         while (result.length < numberOfFuncTypes) {
             let readFunctypeRes: FunctionType | null
-            [readFunctypeRes, pointer] = TypeSectionDisassembler.ReadFuncType(binaryProvider, pointer);
+            [readFunctypeRes, pointer] = TypeSectionDisassembler.ReadFuncType(this.binaryProvider, pointer);
             if (!readFunctypeRes) {
                 throw new Error("Could not read func type.");
             }

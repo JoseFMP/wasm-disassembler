@@ -5,6 +5,7 @@ import { Table } from '../../Table';
 import { Memory } from '../../Memory';
 import { Global } from '../../Global';
 import { WasmFunction } from '../../functions/WasmFunction';
+import { SectionDisassembler } from './SectionDisassembler';
 
 enum ImportTypes {
     function = 0x00,
@@ -19,7 +20,13 @@ enum ImportTypes {
  * encoding specification.
  * @see https://webassembly.github.io/spec/core/bikeshed/index.html#binary-import
  */
-export class ImportSectionDisassembler {
+export class ImportSectionDisassembler implements SectionDisassembler {
+    private readonly binaryProvider: WasmBinaryProvider;
+
+
+    constructor(binaryProvider: WasmBinaryProvider) {
+        this.binaryProvider = binaryProvider;
+    }
 
     static readonly ImportablesMapping: { [importType: number]: (new () => any) } = {
         [ImportTypes.table]: Table,
@@ -29,15 +36,15 @@ export class ImportSectionDisassembler {
     };
 
 
-    static FindImports(binaryProvider: WasmBinaryProvider, initialPointer: number): Import[] {
+    Disassemble(initialPointer: number): Import[] {
         let result: Import[] = [];
         let pointer = initialPointer;
-        let importsLengthU32 = binaryProvider.Getu32(pointer);
+        let importsLengthU32 = this.binaryProvider.Getu32(pointer);
 
         pointer += importsLengthU32.BytesUsed
         while (result.length < importsLengthU32.Value) {
             let newImport: Import;
-            [newImport, pointer] = this.FindImport(binaryProvider, pointer);
+            [newImport, pointer] = this.FindImport(pointer);
             result.push(newImport);
         }
         return result;
@@ -51,32 +58,30 @@ export class ImportSectionDisassembler {
      * @param binaryProvider provider of binary layer of the encoded WASM.
      * @param initialPointer position in the byte array where to start looking for the import.
      */
-    private static FindImport(binaryProvider: WasmBinaryProvider, initialPointer: number): [Import, number] {
+    private FindImport(initialPointer: number): [Import, number] {
         let newImport = new Import();
         let pointer = initialPointer;
 
         let moduleName: string;
-        [moduleName, pointer] = binaryProvider.ReadName(pointer);
+        [moduleName, pointer] = this.binaryProvider.ReadName(pointer);
         if (!moduleName) {
             throw new Error("Could not determine module name in import");
         }
         newImport.Module = moduleName;
 
         let entityName: string;
-        [entityName, pointer] = binaryProvider.ReadName(pointer);
+        [entityName, pointer] = this.binaryProvider.ReadName(pointer);
         if (!entityName) {
             throw new Error("Could not determine module name in import");
         }
         newImport.EntityName = entityName;
 
-        const typeOfImport = binaryProvider.GetRawByte(pointer);
+        const typeOfImport = this.binaryProvider.GetRawByte(pointer);
 
         let importable: Importable = ImportSectionDisassembler.InstantiateImportable(typeOfImport);
 
         newImport.Content = importable;
         pointer ++;
-
-
         return [newImport, pointer];
     }
 

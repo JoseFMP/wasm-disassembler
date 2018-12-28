@@ -43,6 +43,5 @@ export interface WasmBinaryProvider {
      * @param initialPointer position at which to read the value type.
      */
     ReadValueType(initialPointer: number): ValueType | null;
-
 }
 
