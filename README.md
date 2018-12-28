@@ -17,10 +17,13 @@ npm install wasm-disassembler
 ```
 
 To disassemble a WASM binary:
-```
-    const binaryProvider = new WasmMemoryProvider(binary)
-    const disassembler = new WasmDisassembler(binaryProvider)
-    const disassembly = await disassembler.Parse()
+```typescript
+
+import { WasmMemoryProvider, WasmDisassembler } from 'wasm-disassembler';
+
+const binaryProvider = new WasmMemoryProvider(binary);
+const disassembler = new WasmDisassembler(binaryProvider);
+const disassembly = await disassembler.Disassemble();
 ```
 where `binary` is a `Uint8Array` type.
 Note that you can implement your own binary provider besides the already existing `WasmMemoryProvider`. For that purpose you just need to implement the `WasmBinaryProvider` interface.
