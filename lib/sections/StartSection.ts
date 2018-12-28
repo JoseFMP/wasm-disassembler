@@ -1,5 +1,5 @@
 import { Section, SectionIds } from "./Section";
-import { Function } from '../functions/Function'
+import { Function } from '../functions/WasmFunction'
 
 export class StartSection extends Section {
 

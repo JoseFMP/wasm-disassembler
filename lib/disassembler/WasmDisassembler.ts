@@ -2,7 +2,7 @@ import { Section, SectionIds } from '../sections/Section'
 import { WasmModule, WasmVersions } from '../WasmModule';
 import { CustomSection } from '../sections/CustomSection';
 import { StartSection } from '../sections/StartSection';
-import { Function } from '../functions/Function';
+import { Function } from '../functions/WasmFunction';
 import { WasmBinaryProvider } from '../binaryProvider/WasmBinaryProvider'
 import { InstantiateSection, PossibleSections } from '../sections/Mapping';
 import { Disassembly } from './Disassembly';

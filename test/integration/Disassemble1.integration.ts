@@ -77,6 +77,4 @@ mocha.describe('Tests Disassembler', () => {
            expect(disassembly.Modules[0].Sections.length).equals(13);
         }
     })
-
-
 });

@@ -1,5 +1,10 @@
 import { WasmBinaryProvider } from '../../binaryProvider/WasmBinaryProvider';
 import { Import } from '../../imports/Import';
+import { Importable } from '../../imports/Importable';
+import { Table } from '../../Table';
+import { Memory } from '../../Memory';
+import { Global } from '../../Global';
+import { WasmFunction } from '../../functions/WasmFunction';
 
 enum ImportTypes {
     function = 0x00,
@@ -8,6 +13,7 @@ enum ImportTypes {
     global = 0x03
 }
 
+
 /**
  * Disassembles the Imports of an Import Section as described by the WASM binary
  * encoding specification.
@@ -15,7 +21,12 @@ enum ImportTypes {
  */
 export class ImportSectionDisassembler {
 
-
+    static readonly ImportablesMapping: { [importType: number]: (new () => any) } = {
+        [ImportTypes.table]: Table,
+        [ImportTypes.mem]: Memory,
+        [ImportTypes.global]: Global,
+        [ImportTypes.function]: WasmFunction,
+    };
 
 
     static FindImports(binaryProvider: WasmBinaryProvider, initialPointer: number): Import[] {
@@ -60,22 +71,22 @@ export class ImportSectionDisassembler {
 
         const typeOfImport = binaryProvider.GetRawByte(pointer);
 
-        switch(typeOfImport){
-            case ImportTypes.function:
-            break;
-            case ImportTypes.table:
-                break;
-            case ImportTypes.mem:
-                break;
-            case ImportTypes.global:
-                break;
-            default:
-                throw new Error(`Could not figure out the type of import from ${typeOfImport}`)
-        }
+        let importable: Importable = ImportSectionDisassembler.InstantiateImportable(typeOfImport);
 
+        newImport.Content = importable;
         pointer ++;
 
 
         return [newImport, pointer];
     }
+
+
+    private static InstantiateImportable(importableType: ImportTypes): Importable {
+        if (!Object.values(ImportTypes).includes(importableType)) {
+            throw new Error(`The importable type specified does not exist: ${importableType}`);
+        }
+        let newImportable: Importable = new ImportSectionDisassembler.ImportablesMapping[importableType]();
+        return newImportable;
+    }
+
 }
