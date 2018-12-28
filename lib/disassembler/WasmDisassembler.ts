@@ -4,22 +4,26 @@ import { WasmBinaryProvider } from '../binaryProvider/WasmBinaryProvider'
 import { InstantiateSection, PossibleSections } from '../sections/Mapping';
 import { Disassembly } from './Disassembly';
 import { InstantiateSectionDisassembler } from './sections/SectionDisassembler';
+import { Logger, LoggingVerbosity } from '../logging/logger';
+import { SimpleLogger } from '../logging/simpleLogger';
 
 export class WasmDisassembler {
 
-
     static readonly SectionIdLength = 1
     private readonly bp: WasmBinaryProvider
+    
+    private readonly logger: Logger;
 
-    private log: (message: string | object) => void
+    private log: (message: any) => void;
 
-    constructor(binaryProvider: WasmBinaryProvider, logger: (message: string | object) => void = () => {} ) {
-        this.bp = binaryProvider
-        this.log = logger
+    constructor(binaryProvider: WasmBinaryProvider, logger: Logger = new SimpleLogger(null)) {
+        this.bp = binaryProvider;
+        this.logger = logger;
+        this.log = (message: any): void => { this.logger.log(message, LoggingVerbosity.Trace); }
     }
 
 
-    async Parse(): Promise<Disassembly | null> {
+    async Disassemble(): Promise<Disassembly | null> {
         const disassembly = new Disassembly()
         disassembly.FileSize = this.bp.Length
         disassembly.Modules = this.FindModules(0)

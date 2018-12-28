@@ -29,7 +29,7 @@ mocha.describe('Tests Disassembler', () => {
 
         expect(disassembler).not.null;
         
-        const pormiseDisassembling = await disassembler.Parse().catch((reason:any) => {
+        const pormiseDisassembling = await disassembler.Disassemble().catch((reason:any) => {
             expect.fail(`Exception disassembling: ${reason}`)
         });
 
@@ -45,7 +45,7 @@ mocha.describe('Tests Disassembler', () => {
         const memoryProvider = new WasmMemoryProvider(byteArray)
         const disassembler = new WasmDisassembler(memoryProvider);
 
-        const disassembly = await disassembler.Parse();
+        const disassembly = await disassembler.Disassemble();
 
         expect(disassembly).not.undefined;
         expect(disassembly).not.null;
@@ -65,7 +65,7 @@ mocha.describe('Tests Disassembler', () => {
         const memoryProvider = new WasmMemoryProvider(byteArray)
         const disassembler = new WasmDisassembler(memoryProvider);
 
-        const disassembly = await disassembler.Parse();
+        const disassembly = await disassembler.Disassemble();
 
         expect(disassembly).not.undefined;
         expect(disassembly).not.null;
