@@ -17,8 +17,10 @@
         "noUnusedLocals": true,
             
         "types": ["node"],
+
     },
-    "exclude": [
-        "dist"
+    "include": [
+        "lib",
+        "index.ts"
     ]
 }

@@ -1,5 +1,5 @@
 dist/
-
+lib/*.js
 # Logs
 logs
 *.log

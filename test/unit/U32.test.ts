@@ -1,4 +1,4 @@
-import { U32 } from '../lib/binaryProvider/U32';
+import { U32 } from '../../lib/binaryProvider/U32';
  
 import * as mocha from 'mocha';
 import * as chai from 'chai';

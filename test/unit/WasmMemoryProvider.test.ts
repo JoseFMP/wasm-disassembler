@@ -1,4 +1,4 @@
-import { WasmMemoryProvider } from '../lib/binaryProvider/WasmMemoryProvider';
+import { WasmMemoryProvider } from '../../lib/binaryProvider/WasmMemoryProvider';
 
 import * as mocha from 'mocha';
 import * as chai from 'chai';
